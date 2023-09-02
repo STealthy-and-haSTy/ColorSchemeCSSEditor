@@ -1,0 +1,45 @@
+[
+   {
+      "id":"preferences",
+      "children":[
+         {
+            "caption":"Package Settings",
+            "mnemonic":"P",
+            "id":"package-settings",
+            "children":[
+               {
+                  "caption":"ColorSchemeCSSEditor",
+                  "children":[
+                     {
+                        "caption":"README",
+                        "command":"open_file",
+                        "args":{
+                           "file":"${packages}/ColorSchemeCSSEditor/README.md"
+                        }
+                     },
+                     {
+                        "caption":"-"
+                     },
+                     {
+                        "caption":"Settings",
+                        "command":"edit_settings",
+                        "args":{
+                           "base_file":"${packages}/ColorSchemeCSSEditor/ColorSchemeCSSEditor.sublime-settings",
+                           "default":"{\n\t$0\n}\n"
+                        }
+                     },
+                     {
+                        "caption":"Key Bindings",
+                        "command":"edit_settings",
+                        "args":{
+                           "base_file":"${packages}/ColorSchemeCSSEditor/resources/Default (${platform}).sublime-keymap",
+                           "default":"[\n\t$0\n]\n"
+                        }
+                     }
+                  ]
+               }
+            ]
+         }
+      ]
+   }
+]

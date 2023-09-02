@@ -1,0 +1,9 @@
+[
+    // When using the save key in a SubCSS tab, trigger our own
+    // update CSS command instead
+    { "keys": ["ctrl+s"], "command": "save_sub_css_source",
+      "context": [
+        { "key": "setting.subcss_tab" },
+      ]
+    },
+]

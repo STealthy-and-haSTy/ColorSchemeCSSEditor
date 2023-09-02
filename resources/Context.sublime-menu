@@ -1,0 +1,9 @@
+[
+    { "caption": "-" },
+    { "caption": "Navigate to color scheme", "command": "focus_sub_css_parent" },
+    { "caption": "-" },
+    { "caption": "Edit PopupCSS",   "command": "edit_color_scheme_css", "args": {"css_type": "popup_css"} },
+    { "caption": "Edit PhantomCSS", "command": "edit_color_scheme_css", "args": {"css_type": "phantom_css"} },
+    { "caption": "Edit SheetCSS",   "command": "edit_color_scheme_css", "args": {"css_type": "sheet_css"} },
+    { "caption": "-" },
+]
