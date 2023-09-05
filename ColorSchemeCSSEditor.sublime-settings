@@ -1,0 +1,22 @@
+{
+    // When this is true, opening a new view to edit the CSS conent of a color
+    // scheme key will open the new view as part of the tab selection to put the
+    // new view and the color scheme side by side.
+    "open_as_split": true,
+
+    // When true, any time a CSS update is sent from an editing view back to the
+    // parent color scheme, the color scheme file will be saved to disk to make
+    // the change active. This includes both manual sync operations as well as
+    // automatic ones (when update_on_close is turned on).
+    "save_on_update": true,
+
+    // When true, closing a CSS content view will send the current contents of
+    // the tab back to the color scheme file. When false, any content in the
+    // tab will be discarded, even if it has not previously been synced back.
+    "update_on_close": true,
+
+    // The syntax definition to apply to CSS content views that are opened. You
+    // generally do not need to change this unless you want to use a third party
+    // CSS syntax.
+    "css_syntax": "Packages/CSS/CSS.sublime-syntax"
+}
