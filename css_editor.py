@@ -420,18 +420,6 @@ class EditColorSchemeCssCommand(ColorCommandBase, sublime_plugin.TextCommand):
 ## ----------------------------------------------------------------------------
 
 
-# Needs to work:
-#   - when there is no globals section
-#   - when the globals section is empty
-#   - when the globals section has a css key in it
-#   - when the globals section has no css key in it
-#
-# Extra credit:
-#   Can we determine when a key exists but has no value? Do we even care?
-#
-# We will assume that the basic structure of the file is present
-# - Inserting keys needs to make sure that the previous line has a comma or newline on the end, depending on what the line is=
-#
 class AddColorSchemeCssCommand(ColorCommandBase, sublime_plugin.TextCommand):
     """
     Given a color scheme CSS settings key which is one of the key outlined in
@@ -467,19 +455,36 @@ class AddColorSchemeCssCommand(ColorCommandBase, sublime_plugin.TextCommand):
             # Get the list of existing CSS keys, if any
             regions = self.get_global_key_values(CSS_TYPES)
 
-            # If we found some, then insert after the end of the last value
-            # found. The list is an array of tuples where the second item in
-            # the tuple is the region for the value.
-            if regions:
-                insert_pt = regions[-1][1].b + 1
-                insert_text = f'\n\t\t{new_key}'
+            # If there are no existing keys, insert at the start of the globals
+            # section.
+            if not regions:
+                # The region spans the whole "{}" block, we want to start just
+                # inside.
+                global_region = self.get_global_region()[1]
+                insert_pt = global_region.a + 1
+
+                # If the start point is not a newline, then after we insert
+                # the key will leave the closing brace trailing on the new
+                # line unless we move it.
+                extra = '\n\t' if self.view.substr(insert_pt) != '\n' else ''
+                insert_text = f'\n\t\t{new_key}{extra}'
 
             else:
-                # When there are no CSS keys, insert right at the end of the
-                # globals section.
-                global_region = self.get_global_region()[1]
-                insert_pt = global_region.b - 1
-                insert_text = f'\t{new_key}\n\t'
+                # The last region in globals is the one we want, but the return
+                # is a tuple of key,value region locations, so we need the
+                # second one to get the value region. This region will span the
+                # entire value, including the double quote characters.
+                value_region = regions[-1][1]
+                insert_pt = value_region.b + 1
+
+                # The B part of the region is the character to the right of the
+                # value; if it is not a comma, we need to include a comma in
+                # the inserted text so that the key is separated.
+                if self.view.substr(value_region.b) != ',':
+                    insert_pt -= 1
+                    insert_text = f',\n\t\t{new_key}'
+                else:
+                    insert_text = f'\n\t\t{new_key}'
 
         # Insert the text now, and then trigger the edit
         self.view.insert(edit, insert_pt, insert_text)
@@ -718,6 +723,10 @@ class CSSRemoveDeletedRegionsEventListener(sublime_plugin.ViewEventListener):
 
         # Scan over all CSS regions; we find a region list but that list is
         # not valid, then prune that away from the view.
+        #
+        # Also, this should force the child count to be a specific value
+        # Also, if we think we have the region but we can't find the view, then
+        # remove the region.
         for css_type in CSS_TYPES:
             regions = self.view.get_regions(SUBCSS_REGION(css_type))
             if regions and not is_valid_css_region(self.view, regions):
