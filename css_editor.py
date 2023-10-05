@@ -54,7 +54,7 @@ def plugin_loaded():
     """
     Initialize plugin state.
     """
-    cs_setting.obj = sublime.load_settings("ColorSchemeCSSEditor.sublime-settings")
+    cs_setting.obj = None
     cs_setting.default = {
         "open_as_split": True,
         "save_on_update": True,
@@ -68,6 +68,9 @@ def cs_setting(key):
     Get a package setting from a cached settings object, returning the most
     sensible default if that setting is not set.
     """
+    if cs_setting.obj is None:
+        cs_setting.obj = sublime.load_settings("ColorSchemeCSSEditor.sublime-settings")
+
     default = cs_setting.default.get(key, None)
     return cs_setting.obj.get(key, default)
 
