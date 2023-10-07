@@ -41,9 +41,8 @@ SUBCSS_SOURCE="subcss_source"
 SUBCSS_REGION = lambda css_type: f"sub_{css_type}"
 
 # In the view from which the CSS is sourced to ull out into SubCSS tabs, this
-# setting is applied to count the number of SubCSS tabs that are currently
-# open as far as the SUBCSS_REGION keys are concerned; every time a region is
-# added or removed, this value is updated.
+# setting is applied to indicate that at least one SubCSS tab is or as opened
+# from this view as the SUBCSS_REGION keys are concerned.
 CSS_SUBVIEW_COUNT="css_subview_count"
 
 
@@ -159,24 +158,6 @@ def is_valid_css_region(view, regions):
     r = regions[0]
     return (r.size() >= 2 and
                    all(view.substr(pt) == '"' for pt in (r.a, r.b - 1)))
-
-
-def update_css_child_count(parent_view, delta):
-    """
-    Update the CSS_SUBVIEW_COUNT setting in the given parent view by the number
-    provided in the delta. If this takes the count below 0,the value is clamped
-    at zero.
-
-    This will add the setting if it is not currently present and will remove
-    the setting when its value would otherwise be zero.
-    """
-    current = parent_view.settings().get(CSS_SUBVIEW_COUNT, 0)
-    current += delta
-
-    if current <= 0:
-        parent_view.settings().erase(CSS_SUBVIEW_COUNT)
-    else:
-        parent_view.settings().set(CSS_SUBVIEW_COUNT, current)
 
 
 ## ----------------------------------------------------------------------------
@@ -335,7 +316,7 @@ class EditColorSchemeCssCommand(ColorCommandBase, sublime_plugin.TextCommand):
 
         # Mark the region that we extracted with the CSS information.
         self.view.add_regions(SUBCSS_REGION(css_type), [css_region], **CSS_REGION_INFO)
-        update_css_child_count(self.view, 1)
+        self.view.settings().set(CSS_SUBVIEW_COUNT, True)
 
         # Check to see if there is already a view open for this particular type
         # of css edit; if there is and we are supposed to open it as a split,
@@ -596,7 +577,6 @@ class DoSubCssReplaceCommand(sublime_plugin.TextCommand):
                 return log(f'unable to find the CSS source region for {css_type} to replace', status=True)
 
             self.view.erase_regions(SUBCSS_REGION(css_type))
-            update_css_child_count(self.view, -1)
 
             return log(f"the value for {css_type} in the source file is missing or invalid", status=True)
 
@@ -618,7 +598,6 @@ class DoSubCssReplaceCommand(sublime_plugin.TextCommand):
         if diff > 0:
             region = sublime.Region(region.a, region.b + diff)
             self.view.add_regions(SUBCSS_REGION(css_type), [region], **CSS_REGION_INFO)
-            update_css_child_count(self.view, 0)
 
 
 ## ----------------------------------------------------------------------------
@@ -660,7 +639,6 @@ class OverallCssListener(sublime_plugin.EventListener):
             main_view = find_source_view(view)
             if main_view is not None:
                 main_view.erase_regions(SUBCSS_REGION(css_type))
-                update_css_child_count(main_view, -1)
 
 
     def click(self, view, css_type):
@@ -734,7 +712,6 @@ class CSSRemoveDeletedRegionsEventListener(sublime_plugin.ViewEventListener):
             regions = self.view.get_regions(SUBCSS_REGION(css_type))
             if regions and not is_valid_css_region(self.view, regions):
                 self.view.erase_regions(SUBCSS_REGION(css_type))
-                update_css_child_count(self.view, -1)
 
 
 ## ----------------------------------------------------------------------------
